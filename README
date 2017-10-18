@@ -6,7 +6,7 @@ though RPI2/3 has four cores.
 
 ACKNOWLEDGEMENTS
 
-xv6_rpi_port is inspired by MIT xv6 and Alex Chadwick's Baking Pi 
+xv6_rpi2_port is inspired by MIT xv6 and Alex Chadwick's Baking Pi 
 Tutorials (http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/os/).
 Most architecture-independent code is directly from MIT xv6 though sometimes
 minor adjustments were done to explicitly initialize data structures.
@@ -25,7 +25,7 @@ RPI2/3.
 If you spot errors or suggest improvements, please send email to
 Zhiyi Huang (hzy@cs.otago.ac.nz).
 
-Building xv6_rpi_port:
+Building xv6_rpi2_port:
 
 Suppose you have checked out the source with:
 
