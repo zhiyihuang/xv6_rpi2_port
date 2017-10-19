@@ -31,7 +31,7 @@ Suppose you have checked out the source with:
 
 $ git clone https://github.com/zhiyihuang/xv6_rpi2_port.git
 
-On an RPI2/3 installed with Raspbian, type 'make hw=rpi2 loader' to make 'kernel7.img'.
+On an RPI2/3 installed with Raspbian, type 'make loader' to make 'kernel7.img'.
 
 Copy 'kernel7.img' to /boot with a different name:
 # cp kernel7.img /boot/kernel-xv6.img
@@ -52,8 +52,7 @@ Building xv6 user programs and FS (You don't need this step if you
 don't change the user programs):
 
 cd uprogs
-make initcode 
-make fs.img
+make 
 
 copy 'initcode' and 'fs.img' to the directory 'source'
 
