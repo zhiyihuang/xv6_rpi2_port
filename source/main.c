@@ -79,7 +79,9 @@ int cmain()
   consoleinit();
   cprintf("\nHello World from xv6\n");
 
-  kinit1(end, P2V((8*1024*1024)+PHYSTART));  // reserve 8 pages for PGDIR
+  kinit1(end, P2V((8*1024*1024)+PHYSTART)); 
+  // collect some free space (8 MB) for imminent use
+  // the physical space below 0x8000 is reserved for PGDIR and kernel stack
   kpgdir=p2v(K_PDX_BASE);
 
   mailboxinit();
