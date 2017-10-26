@@ -44,8 +44,7 @@ else ifeq ($(hw), rpi1)
 	CC_OPTIONS = -DRPI1
 else ifeq ($(hw), rpi2)
 	 PHYSTART = 0x00000000
-	# PHYSIZE set to 128mb
-	#PHYSIZE   = 0x08000000
+	# PHYSIZE set to 256mb
 	PHYSIZE   = 0x10000000
 	KERNBASE  = 0x80000000
 	MMIO_PA   = 0x3F000000
