@@ -11,11 +11,13 @@
 #include "memlayout.h"
 #include "mmu.h"
 
+unsigned int pm_size;
+
 void mmuinit0(void)
 {
 	pde_t *l1;
 	pte_t *l2;
-	uint pa, va, *p;
+	uint pa, va;
 
 	// diable mmu
 	// use inline assembly here as there is a limit on 
@@ -88,8 +90,18 @@ mmuinit1(void)
 {
 	pde_t *l1;
 	uint va1, va2;
+	uint pa, va;
 
 	l1 = (pde_t*)(K_PDX_BASE);
+
+
+	// map the rest of RAM after PHYSTART+PHYSIZE
+        va = KERNBASE + PHYSIZE;
+        for(pa = PHYSTART + PHYSIZE; pa < PHYSTART+pm_size; pa += MBYTE){
+                l1[PDX(va)] = pa|DOMAIN0|PDX_AP(K_RW)|SECTION|CACHED|BUFFERED;
+                va += MBYTE;
+        }
+
 
 	// undo identity map of first MB of ram
 	l1[PDX(PHYSTART)] = 0;

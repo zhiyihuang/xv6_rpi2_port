@@ -18,6 +18,7 @@
 
 extern char data[];  // defined by kernel.ld
 extern char end[];  // defined by kernel.ld
+extern unsigned int pm_size;
 
 pde_t *kpgdir;  // for use in scheduler()
 
@@ -151,8 +152,9 @@ setupkvm_new(void)
 
   pgdir = kpgdir;
   memset(pgdir, 0, 4*PGSIZE);
-  if (p2v(PHYSTOP) > (void*)MMIO_VA)
-    panic("PHYSTOP too high");
+  if (p2v(pm_size) > (void*)MMIO_VA)
+    panic("PHYSTOP (pm_size) too high");
+  k = kmap; k->phys_end = pm_size;
   for(k = kmap; k < &kmap[NELEM(kmap)]; k++)
     if(mappages(pgdir, k->virt, k->phys_end - k->phys_start, 
                 (uint)k->phys_start, k->l1attr, k->l2attr) < 0)

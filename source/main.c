@@ -19,6 +19,7 @@ extern char end[]; // first address after kernel loaded from ELF file
 extern pde_t *kpgdir;
 extern FBI fbinfo;
 extern volatile uint *mailbuffer;
+extern unsigned int pm_size;
 
 void OkLoop()
 {
@@ -42,6 +43,15 @@ void NotOkLoop()
    }
 }
 
+unsigned int getpmsize()
+{
+    create_request(mailbuffer, MPI_TAG_GET_ARM_MEMORY, 8, 0, 0);
+    writemailbox((uint *)mailbuffer, 8);
+    readmailbox(8);
+    if(mailbuffer[1] != 0x80000000) cprintf("Error readmailbox: %x\n", MPI_TAG_GET_ARM_MEMORY);
+    return mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1];
+}
+
 void machinit(void)
 {
     memset(cpus, 0, sizeof(struct cpu)*NCPU);
@@ -56,8 +66,6 @@ int cmain()
 {
   u32 x;
   mmuinit0();
-  //XX OK
-  mmuinit1();
   machinit();
 
   #if defined (RPI1) || defined (RPI2)
@@ -65,24 +73,26 @@ int cmain()
   #elif defined (FVP)
   uartinit_fvp();
   #endif
-  //XXX OK
+
   dsb_barrier();
 
   consoleinit();
-
   cprintf("\nHello World from xv6\n");
-  cprintf("Frame buffer addr size pitch depth: %x %x %x %x\n", fbinfo.fbp, fbinfo.fbs, fbinfo.pitch, fbinfo.depth);
-  acknowledge();
+
   kinit1(end, P2V((8*1024*1024)+PHYSTART));  // reserve 8 pages for PGDIR
   kpgdir=p2v(K_PDX_BASE);
 
   mailboxinit();
 
-  create_request(mailbuffer, MPI_TAG_GET_ARM_MEMORY, 8, 0, 0);
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("Error readmailbox: %x\n", MPI_TAG_GET_ARM_MEMORY);
-  cprintf("ARM memory is %x %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
+  pm_size = getpmsize();
+  cprintf("ARM memory is %x\n", pm_size);
+  
+  mmuinit1();
+
+/************ 
+*** gpu framebuffer cannot be made working properly due to the changed, closed hardware, so the code is commented out; but hackers are welcome to try:-)
+
+  
 
   mb_data[0] = 64; mb_data[1] = 0;
   create_request(mailbuffer, 0x40001, 8, 4, mb_data);
@@ -96,22 +106,12 @@ int cmain()
   fbinfo.fbp = 0x40000000 + 0x3fffffff & mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH]; // convert bus address to ARM physical address
   cprintf("fbinfo.fbp addr: %x\n", fbinfo.fbp);
 
-  outw(fbinfo.fbp, 0xabcdef);
-  x = inw(fbinfo.fbp);
-  cprintf("value of x is %x\n", x);
-
-  outw(0x4f000000, 0xabcdef);
-  x = inw(0x4f000000);
-  cprintf("value of x is %x\n", x);
-
-
   mb_data[0] = 1024; mb_data[1] = 768;
   create_request(mailbuffer, 0x44004, 8, 8, mb_data);
   writemailbox((uint *)mailbuffer, 8);
   readmailbox(8);
   if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x48004);
   cprintf("virtual width/height are set %x %x\n", 1024, 768);
-
 
   create_request(mailbuffer, 0x40004, 8, 0, 0);
   writemailbox((uint *)mailbuffer, 8);
@@ -125,14 +125,12 @@ int cmain()
   if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40003);
   cprintf("physical width/height are %x %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
 
-
   mb_data[0] = 32; mb_data[1] = 0;
   create_request(mailbuffer, 0x48005, 4, 4, mb_data);
   writemailbox((uint *)mailbuffer, 8);
   readmailbox(8);
   if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x48005);
   cprintf("depth is set to %x\n", 32);
-
 
   create_request(mailbuffer, 0x40005, 4, 0, 0);
   writemailbox((uint *)mailbuffer, 8);
@@ -152,6 +150,7 @@ int cmain()
   if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40009);
   cprintf("virtual offset X Y are %x %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
 
+*********************/
 
   pinit();
   tvinit();
@@ -164,7 +163,7 @@ cprintf("it is ok after fileinit\n");
 cprintf("it is ok after iinit\n");
   ideinit();
 cprintf("it is ok after ideinit\n");
-  kinit2(P2V((8*1024*1024)+PHYSTART), P2V(PHYSTOP));
+  kinit2(P2V((8*1024*1024)+PHYSTART), P2V(pm_size));
 cprintf("it is ok after kinit2\n");
   userinit();
 cprintf("it is ok after userinit\n");

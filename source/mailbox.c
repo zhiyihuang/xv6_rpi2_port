@@ -83,7 +83,6 @@ writemailbox(uint *addr, u8 channel)
 
 	a = (uint)addr;
 	a -= KERNBASE;   /* convert to ARM physical address */
-	//a += 0x40000000; /* convert to VC address space */
 	a += 0xc0000000; /* convert to VC address space */
 	x = a & 0xfffffff0;
 	y = x | (uint)(channel & 0xf);
