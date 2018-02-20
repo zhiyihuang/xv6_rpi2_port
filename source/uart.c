@@ -58,7 +58,7 @@ setgpioval(uint pin, uint val)
 
 
 void
-setgpiofunc(uint pin, uint alt)
+setgpiofunc(uint pin, uint func)
 {
 	uint sel, data, shift;
 
@@ -73,7 +73,7 @@ setgpiofunc(uint pin, uint alt)
 	shift = pin + (pin << 1);
 	data &= ~(7 << shift);
 	outw(sel, data);
-	data |= alt << shift;
+	data |= func << shift;
 	outw(sel, data);
 }
 
