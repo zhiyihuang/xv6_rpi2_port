@@ -58,7 +58,7 @@ void mmuinit0(void)
 
 	// map GPU memory
 	va = GPUMEMBASE;
-	for(pa = GPUMEMBASE; pa < (uint)GPUMEMBASE+(uint)GPUMEMSIZE; pa += MBYTE){
+	for(pa = 0; pa < (uint)GPUMEMSIZE; pa += MBYTE){
 		l1[PDX(va)] = pa|DOMAIN0|PDX_AP(K_RW)|SECTION;
 		va += MBYTE;
 	}

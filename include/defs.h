@@ -34,6 +34,7 @@ void            consoleintr(int(*)(void));
 void            panic(char*) __attribute__((noreturn));
 void		drawcharacter(u8, uint, uint);
 void		gpuputc(uint);
+void		gouinit(void);
 
 
 // fs.c

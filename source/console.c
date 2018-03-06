@@ -28,12 +28,11 @@ static struct {
 
 
 uint cursor_x=0, cursor_y=0;
-//uint frameheight=768, framewidth=1024, framecolors=16;
-uint frameheight=0x400, framewidth=0x500, framecolors=16;
+uint frameheight=1024, framewidth=1280, framedepth=16;
 uint fontheight=16, fontwidth=8;
 FBI fbinfo __attribute__ ((aligned (16), nocommon));
 
-
+extern volatile uint *mailbuffer;
 extern u8 font[];
 static uint gpucolour=0xffff;
 
@@ -42,8 +41,12 @@ void setgpucolour(u16 c)
 	gpucolour = c;
 }
 
+
+
 uint initframebuf(uint width, uint height, uint depth)
 {
+  
+
 	fbinfo.width = width;
 	fbinfo.height = height;
 	fbinfo.v_width = width;
@@ -54,8 +57,8 @@ uint initframebuf(uint width, uint height, uint depth)
 	fbinfo.y = 0;
 	fbinfo.fbp = 0;
 	fbinfo.fbs = 0;
-	//writemailbox((uint *)&fbinfo, 1);
-	//return readmailbox(1);
+	writemailbox((uint *)&fbinfo, 1);
+	return readmailbox(1);
 }
 
 #define INPUT_BUF 128
@@ -80,6 +83,7 @@ consolewrite(struct inode *ip, char *buf, int n)
 		gpuputc(buf[i] & 0xff);
 		uartputc(buf[i] & 0xff);
 #elif defined (RPI2)
+		gpuputc(buf[i] & 0xff);
 		uartputc(buf[i] & 0xff);
 #elif defined (FVP)
 		uartputc_fvp(buf[i] & 0xff);
@@ -136,7 +140,7 @@ void drawcharacter(u8 c, uint x, uint y)
 void
 gpuputc(uint c)
 {
-	#if defined (RPI1)
+	#if defined (RPI1) || defined (RPI2)
 
 	if(fbinfo.fbp == 0) return;
 
@@ -339,19 +343,19 @@ consputc(int c)
 	}
 
 	if(c == BACKSPACE){
-		#if defined (RPI1)
+		//#if defined (RPI1)
 		gpuputc('\b'); gpuputc(' '); gpuputc('\b');
-		#endif
+		//#endif
 		uartputc('\b'); uartputc(' '); uartputc('\b');
 	} else if(c == C('D')) {
-		#if defined (RPI1)
+		//#if defined (RPI1)
 		gpuputc('^'); gpuputc('D');
-		#endif
+		//#endif
 		uartputc('^'); uartputc('D');
 	} else {
-		#if defined (RPI1)
+		//#if defined (RPI1)
 		gpuputc(c);
-		#endif
+		//#endif
 		uartputc(c);
 	}
 }
@@ -437,14 +441,31 @@ consoleread(struct inode *ip, char *dst, int n)
 	return target - n;
 }
 
+void gpuinit()
+{
+u32 *fb;
+int i;
+	#if defined (RPI1) || defined (RPI2)
+	uint fbinforesp;
+	fbinforesp = initframebuf(framewidth, frameheight, framedepth);
+	if(fbinforesp != 0){
+		cprintf("Failed to initialize GPU framebuffer!\n");
+		fbinfo.fbp = 0;
+	}
+
+	// convert the address into ARM space and then to the ARM VM space for the whole physical address space
+	fbinfo.fbp = (fbinfo.fbp & 0x3fffffff) + 0x40000000;
+	cprintf("The frame buffer pointer is %x\n", fbinfo.fbp);
+	fb = fbinfo.fbp;
+	for (i=0; i< 2000; i++) fb[i] =0xffffffff;
+        #endif
+}
+
+
 void consoleinit(void)
 {
-	#if defined (RPI1) || defined (RPI2)
-	uint fbinfoaddr;
-	fbinfoaddr = initframebuf(framewidth, frameheight, framecolors);
-	if(fbinfoaddr != 0) NotOkLoop();
-	#endif
 
+	fbinfo.fbp = 0;
 	initlock(&cons.lock, "console");
 	memset(&input, 0, sizeof(input));
 	initlock(&input.lock, "input");
@@ -456,5 +477,6 @@ void consoleinit(void)
 	panicked = 0; // must initialize in code since the compiler does not
 
 	cursor_x=cursor_y=0;
+
 }
 

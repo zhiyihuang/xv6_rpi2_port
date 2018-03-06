@@ -22,7 +22,6 @@
 
 /* Note: for more tags refer to 
 https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface */
-/* Note for Matthew: support more than one tag in buffer */
 
 
 void
