@@ -90,7 +90,11 @@ int cmain()
   mmuinit1();
   gpuinit();
 
-/**********
+/**************************************************
+**** The following mailbox code for setting up GPU framebuffer also works   ***
+**** This may be a better way to set up the framebuffer but leave for future **
+**** extension ***************
+
   create_request(mailbuffer, 0x40003, 8, 0, 0); //get physical buffer width/height
   writemailbox((uint *)mailbuffer, 8);
   readmailbox(8);
@@ -136,69 +140,6 @@ int cmain()
 for (i=0; i< 2000; i++) fb[i] =0xffffffff;
 
 *****************/
-
-/************ 
-*** gpu framebuffer cannot be made working properly due to the changed, closed hardware, so the code is commented out; but hackers are welcome to try:-)
-
-  
-
-  mb_data[0] = 64; mb_data[1] = 0;
-  create_request(mailbuffer, 0x40001, 8, 4, mb_data);
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40001);
-  cprintf("framebuffer addr and size are %x %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
-
-  cprintf("mb_data addr: %x\n", mb_data);
-
-  fbinfo.fbp = 0x40000000 + 0x3fffffff & mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH]; // convert bus address to ARM physical address
-  cprintf("fbinfo.fbp addr: %x\n", fbinfo.fbp);
-
-  mb_data[0] = 1024; mb_data[1] = 768;
-  create_request(mailbuffer, 0x44004, 8, 8, mb_data);
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x48004);
-  cprintf("virtual width/height are set %x %x\n", 1024, 768);
-
-  create_request(mailbuffer, 0x40004, 8, 0, 0);
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40004);
-  cprintf("virtual width/height are %x %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
-
-  create_request(mailbuffer, 0x40003, 8, 0, 0);
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40003);
-  cprintf("physical width/height are %x %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
-
-  mb_data[0] = 32; mb_data[1] = 0;
-  create_request(mailbuffer, 0x48005, 4, 4, mb_data);
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x48005);
-  cprintf("depth is set to %x\n", 32);
-
-  create_request(mailbuffer, 0x40005, 4, 0, 0);
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40005);
-  cprintf("depth is %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH]);
-
-  create_request(mailbuffer, 0x40008, 4, 0, 0);
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40008);
-  cprintf("pitch is %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH]);
-
-  create_request(mailbuffer, 0x40009, 8, 0, 0);
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40009);
-  cprintf("virtual offset X Y are %x %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
-
-*********************/
 
   pinit();
   tvinit();
