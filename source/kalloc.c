@@ -27,6 +27,7 @@ struct {
 void
 kinit1(void *vstart, void *vend)
 {
+  pm_size = 0x400*0x400*32; // assume at least 32 MB physical memory
   initlock(&kmem.lock, "kmem");
   kmem.use_lock = 0;
   kmem.freelist = 0;
@@ -58,7 +59,6 @@ void
 kfree(char *v)
 {
   struct run *r;
-
   if((uint)v % PGSIZE || v < end || v2p(v) >= pm_size)
     panic("kfree");
 

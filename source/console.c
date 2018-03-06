@@ -220,6 +220,7 @@ printint(int xx, int base, int sign)
 		gpuputc(buf[i]);
 		uartputc(buf[i]);
 		#elif defined (RPI2)
+		gpuputc(buf[i]);
 		uartputc(buf[i]);
 		#elif defined (FVP)
 		uartputc_fvp(buf[i]);
@@ -251,6 +252,7 @@ cprintf(char *fmt, ...)
 			gpuputc(c);
 			uartputc(c);
 			#elif defined (RPI2)
+			gpuputc(c);
 			uartputc(c);
 			#elif defined (FVP)
 			uartputc_fvp(c);
@@ -276,6 +278,7 @@ cprintf(char *fmt, ...)
 				gpuputc(*s);
 				uartputc(*s);
 				#elif defined (RPI2)
+				gpuputc(*s);
 				uartputc(*s);
 				#elif defined (FVP)
 				uartputc_fvp(*s);
@@ -287,6 +290,7 @@ cprintf(char *fmt, ...)
 			gpuputc('%');
 			uartputc('%');
 			#elif defined (RPI2)
+			gpuputc('%');
 			uartputc('%');
 			#elif defined (FVP)
 			uartputc_fvp('%');
@@ -300,7 +304,9 @@ cprintf(char *fmt, ...)
 			gpuputc(c);
 			uartputc(c);
 			#elif defined (RPI2)
+			gpuputc('%');
 			uartputc('%');
+			gpuputc(c);
 			uartputc(c);
 			#elif defined (FVP)
 			uartputc_fvp('%');
@@ -443,21 +449,18 @@ consoleread(struct inode *ip, char *dst, int n)
 
 void gpuinit()
 {
-u32 *fb;
-int i;
 	#if defined (RPI1) || defined (RPI2)
 	uint fbinforesp;
 	fbinforesp = initframebuf(framewidth, frameheight, framedepth);
 	if(fbinforesp != 0){
-		cprintf("Failed to initialize GPU framebuffer!\n");
 		fbinfo.fbp = 0;
+		cprintf("Failed to initialize GPU framebuffer!\n");
+		return;
 	}
 
 	// convert the address into ARM space and then to the ARM VM space for the whole physical address space
 	fbinfo.fbp = (fbinfo.fbp & 0x3fffffff) + 0x40000000;
-	cprintf("The frame buffer pointer is %x\n", fbinfo.fbp);
-	fb = fbinfo.fbp;
-	for (i=0; i< 2000; i++) fb[i] =0xffffffff;
+	//cprintf("The frame buffer pointer is %x\n", fbinfo.fbp);
         #endif
 }
 

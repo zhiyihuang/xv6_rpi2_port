@@ -12,6 +12,7 @@ void OkLoop(void);
 void NotOkLoop(void);
 
 // mmu.c
+void mmuinit0(void);
 void mmuinit1(void);
 void barriers(void);
 void dsb_barrier(void);
@@ -34,7 +35,7 @@ void            consoleintr(int(*)(void));
 void            panic(char*) __attribute__((noreturn));
 void		drawcharacter(u8, uint, uint);
 void		gpuputc(uint);
-void		gouinit(void);
+void		gpuinit(void);
 
 
 // fs.c
