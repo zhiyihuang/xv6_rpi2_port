@@ -42,38 +42,38 @@
 #define AUX_MU_BAUD_REG (MMIO_VA+0x215068)
 
 void
-setgpioval(uint func, uint val)
+setgpioval(uint pin, uint val)
 {
 	uint sel, ssel, rsel, shift;
 
-	if(func > 53) return;
-	if(func >= 32) sel = 1; else sel = 0;
+	if(pin > 53) return;
+	if(pin >= 32) sel = 1; else sel = 0;
 	ssel = GPSET0 + (sel << 2);
 	rsel = GPCLR0 + (sel << 2);
-	if(sel) shift = (func - 32) & 0x1f;
-	else shift = func & 0x1f;
+	if(sel) shift = (pin - 32) & 0x1f;
+	else shift = pin & 0x1f;
 	if(val == 0) outw(rsel, 1<<shift);
 	else outw(ssel, 1<<shift);
 }
 
 
 void
-setgpiofunc(uint func, uint alt)
+setgpiofunc(uint pin, uint func)
 {
 	uint sel, data, shift;
 
-	if(func > 53) return;
+	if(pin > 53) return;
 	sel = 0;
-	while (func > 10) {
-	    func = func - 10;
+	while (pin > 10) {
+	    pin = pin - 10;
 	    sel++;
 	}
 	sel = (sel << 2) + GPFSEL0;
 	data = inw(sel);
-	shift = func + (func << 1);
+	shift = pin + (pin << 1);
 	data &= ~(7 << shift);
 	outw(sel, data);
-	data |= alt << shift;
+	data |= func << shift;
 	outw(sel, data);
 }
 
