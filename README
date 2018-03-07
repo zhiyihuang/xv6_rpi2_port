@@ -48,9 +48,8 @@ enable_uart=1
 
 Reboot the machine.
 
-Since the information of GPU on RPI 2/3 is locked off, the GPU framebuffer 
-does not work in xv6 so there is no display on your monitor. The only way
-for the console is to use the mini UART (serial port). You can use a 
+The USB keyboard is not working yet. The only way to input into
+the console is to use the mini UART (serial port). You can use a 
 USB to TTL Serial Cable to connect the mini UART to a virtual terminal.
 You may use minicom or CoolTerm to create the virtual terminal.
 You have to open the lid to connect the cable to the GPIO pins (14 and 15) 
