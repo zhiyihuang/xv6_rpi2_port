@@ -89,58 +89,6 @@ int cmain()
   
   mmuinit1();
   gpuinit();
-
-/**************************************************
-**** The following mailbox code for setting up GPU framebuffer also works   ***
-**** This may be a better way to set up the framebuffer but leave for future **
-**** extension ***************
-
-  create_request(mailbuffer, 0x40003, 8, 0, 0); //get physical buffer width/height
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40003);
-  cprintf("physical width/height are %d %d\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
-
- 
-  create_request(mailbuffer, 0x40005, 8, 0, 0); //get display depth
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40005);
-  cprintf("The depth of the display is %d\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH]);
-
-  mb_data[0] = 1280; mb_data[1] = 1024; 
-  create_request(mailbuffer, 0x48004, 8, 2, mb_data); //set virtual buffer width/height
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x48004);
-  cprintf("The virtual width/height are %d %d\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
-
-  mb_data[0] = 0; mb_data[1] = 0;
-  create_request(mailbuffer, 0x48009, 8, 2, mb_data); //set virtual offset
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x48009);
-  cprintf("The virtual offsets are %d %d\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
-
-  mb_data[0] = 0;
-  create_request(mailbuffer, 0x40001, 8, 1, mb_data); //allocate buffer
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40001);
-  cprintf("The buffer base address and size are %x %x\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH], mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1]);
-  fb = (u32 *)(0x40000000 + mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH]);
-
-
-  create_request(mailbuffer, 0x40008, 8, 0, 0); //get pitch
-  writemailbox((uint *)mailbuffer, 8);
-  readmailbox(8);
-  if(mailbuffer[1] != 0x80000000) cprintf("error readmailbox: %x\n", 0x40008);
-  cprintf("The depth of the display is %d\n", mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH]);
-
-for (i=0; i< 2000; i++) fb[i] =0xffffffff;
-
-*****************/
-
   pinit();
   tvinit();
   cprintf("it is ok after tvinit\n");
