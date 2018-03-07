@@ -466,8 +466,7 @@ void gpuinit()
 
 /**************************************************
 **** The following mailbox code for setting up GPU framebuffer also works   ***
-**** This may be a better way to set up the framebuffer but leave for future **
-**** extension ***************
+**** This may be a better way to set up the framebuffer but left for future extension **
 
   create_request(mailbuffer, 0x40003, 8, 0, 0); //get physical buffer width/height
   writemailbox((uint *)mailbuffer, 8);
