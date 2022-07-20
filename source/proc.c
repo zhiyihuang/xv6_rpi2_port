@@ -16,6 +16,8 @@
 #include "proc.h"
 #include "spinlock.h"
 
+struct cpu cpus[NCPU];
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
