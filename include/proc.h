@@ -23,7 +23,7 @@ struct cpu {
   struct proc *proc;           // The currently-running process.
 };
 
-struct cpu cpus[NCPU];
+extern struct cpu cpus[NCPU];
 //extern int ncpu;
 
 // Per-CPU variables, holding pointers to the
