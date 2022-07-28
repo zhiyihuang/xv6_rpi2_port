@@ -162,7 +162,7 @@ int cmain()
   cprintf("ARM memory is %x\n", pm_size);
   cprintf("Max core clock rate is %d\n", getmaxclockrate(CORE_CLOCK_ID));
   cprintf("Min core clock rate is %d\n", getminclockrate(CORE_CLOCK_ID));
-
+  // set the core clock rate to 250MHz, but Pi 3 B+ can only be set to 400MHz
   cprintf("The core clock rate is set to %d\n", setclockrate(CORE_CLOCK_ID, 250000000));
 
   boardmodel = getboardmodel();
