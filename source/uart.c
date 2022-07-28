@@ -23,23 +23,25 @@
 #define GPSET1			(MMIO_VA+0x200020)
 #define GPCLR0  		(MMIO_VA+0x200028)
 #define GPCLR1			(MMIO_VA+0x20002C)
-#define GPPUD       	(MMIO_VA+0x200094)
-#define GPPUDCLK0   	(MMIO_VA+0x200098)
+#define GPPUD       		(MMIO_VA+0x200094)
+#define GPPUDCLK0   		(MMIO_VA+0x200098)
 #define GPPUDCLK1		(MMIO_VA+0x20009C)
 
 #define AUX_IRQ			(MMIO_VA+0x215000)
-#define AUX_ENABLES     (MMIO_VA+0x215004)
-#define AUX_MU_IO_REG   (MMIO_VA+0x215040)
-#define AUX_MU_IER_REG  (MMIO_VA+0x215044)
-#define AUX_MU_IIR_REG  (MMIO_VA+0x215048)
-#define AUX_MU_LCR_REG  (MMIO_VA+0x21504C)
-#define AUX_MU_MCR_REG  (MMIO_VA+0x215050)
-#define AUX_MU_LSR_REG  (MMIO_VA+0x215054)
-#define AUX_MU_MSR_REG  (MMIO_VA+0x215058)
-#define AUX_MU_SCRATCH  (MMIO_VA+0x21505C)
-#define AUX_MU_CNTL_REG (MMIO_VA+0x215060)
-#define AUX_MU_STAT_REG (MMIO_VA+0x215064)
-#define AUX_MU_BAUD_REG (MMIO_VA+0x215068)
+#define AUX_ENABLES     	(MMIO_VA+0x215004)
+#define AUX_MU_IO_REG   	(MMIO_VA+0x215040)
+#define AUX_MU_IER_REG  	(MMIO_VA+0x215044)
+#define AUX_MU_IIR_REG  	(MMIO_VA+0x215048)
+#define AUX_MU_LCR_REG  	(MMIO_VA+0x21504C)
+#define AUX_MU_MCR_REG  	(MMIO_VA+0x215050)
+#define AUX_MU_LSR_REG  	(MMIO_VA+0x215054)
+#define AUX_MU_MSR_REG  	(MMIO_VA+0x215058)
+#define AUX_MU_SCRATCH  	(MMIO_VA+0x21505C)
+#define AUX_MU_CNTL_REG 	(MMIO_VA+0x215060)
+#define AUX_MU_STAT_REG 	(MMIO_VA+0x215064)
+#define AUX_MU_BAUD_REG 	(MMIO_VA+0x215068)
+
+extern unsigned int core_clock_freq, boardmodel, boardrevision;
 
 void
 setgpioval(uint pin, uint val)
@@ -115,13 +117,16 @@ miniuartintr(void)
 void 
 uartinit(void)
 {
+    unsigned int v;
+
 	outw(AUX_ENABLES, 1);
 	outw(AUX_MU_CNTL_REG, 0);
 	outw(AUX_MU_LCR_REG, 0x3);
 	outw(AUX_MU_MCR_REG, 0);
 	outw(AUX_MU_IER_REG, 0x1);
 	outw(AUX_MU_IIR_REG, 0xC7);
-	outw(AUX_MU_BAUD_REG, 270); // (250,000,000/(115200*8))-1 = 270
+	v = (core_clock_freq/(115200*8)) - 1;
+	outw(AUX_MU_BAUD_REG, v);
 
 	setgpiofunc(14, 2); // gpio 14, alt 5
 	setgpiofunc(15, 2); // gpio 15, alt 5
