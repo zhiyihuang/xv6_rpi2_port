@@ -20,6 +20,14 @@ extern pde_t *kpgdir;
 extern volatile uint *mailbuffer;
 extern unsigned int pm_size;
 
+unsigned int boardmodel, boardrevision;
+
+#if defined (RPI1) || defined (RPI2)
+unsigned int core_clock_freq = 250000000;
+#else
+unsigned int core_clock_freq = 400000000;
+#endif
+
 void OkLoop()
 {
    setgpiofunc(18, 1); // gpio 18 for Ok Led, set as an output
@@ -51,6 +59,68 @@ unsigned int getpmsize()
     return mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1];
 }
 
+unsigned int getboardmodel()
+{
+    create_request(mailbuffer, MPI_TAG_GET_BOARD_MODEL, 4, 0, 0);
+    writemailbox((uint *)mailbuffer, 8);
+    readmailbox(8);
+    if(mailbuffer[1] != 0x80000000) cprintf("Error readmailbox: %x\n", MPI_TAG_GET_ARM_MEMORY);
+    return mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH];
+}
+
+unsigned int getboardrevision()
+{
+    create_request(mailbuffer, MPI_TAG_GET_BOARD_REVISION, 4, 0, 0);
+    writemailbox((uint *)mailbuffer, 8);
+    readmailbox(8);
+    if(mailbuffer[1] != 0x80000000) cprintf("Error readmailbox: %x\n", MPI_TAG_GET_ARM_MEMORY);
+    return mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH];
+}
+
+unsigned int getmaxclockrate(unsigned int id)
+{
+    unsigned int md[2];
+    md[0] = id; md[1] = 0;
+    create_request(mailbuffer, MPI_TAG_GET_MAX_CLOCK_RATE, 8, 4, md);
+    writemailbox((uint *)mailbuffer, 8);
+    readmailbox(8);
+    if(mailbuffer[1] != 0x80000000) cprintf("Error readmailbox: %x\n", MPI_TAG_GET_MAX_CLOCK_RATE);
+    return mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1];
+}
+
+unsigned int getminclockrate(unsigned int id)
+{
+    unsigned int md[2];
+    md[0] = id; md[1] = 0;
+    create_request(mailbuffer, MPI_TAG_GET_MIN_CLOCK_RATE, 8, 4, md);
+    writemailbox((uint *)mailbuffer, 8);
+    readmailbox(8);
+    if(mailbuffer[1] != 0x80000000) cprintf("Error readmailbox: %x\n", MPI_TAG_GET_MIN_CLOCK_RATE);
+    return mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1];
+}
+
+unsigned int getclockratemeasured(unsigned int id)
+{
+    unsigned int md[2];
+    md[0] = id; md[1] = 0;
+    create_request(mailbuffer, MPI_TAG_GET_CLOCK_RATE_MEASURED, 8, 4, md);
+    writemailbox((uint *)mailbuffer, 8);
+    readmailbox(8);
+    if(mailbuffer[1] != 0x80000000) cprintf("Error readmailbox: %x\n", MPI_TAG_GET_MIN_CLOCK_RATE);
+    return mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1];
+}
+
+unsigned int setclockrate(unsigned int id, unsigned int rate)
+{
+    unsigned int md[3];
+    md[0] = id; md[1] = rate; md[2] = 1;
+    create_request(mailbuffer, MPI_TAG_SET_CLOCK_RATE, 12, 12, md);
+    writemailbox((uint *)mailbuffer, 8);
+    readmailbox(8);
+    if(mailbuffer[1] != 0x80000000) cprintf("Error readmailbox: %x\n", MPI_TAG_GET_MIN_CLOCK_RATE);
+    return mailbuffer[MB_HEADER_LENGTH + TAG_HEADER_LENGTH+1];
+}
+
 void machinit(void)
 {
     memset(cpus, 0, sizeof(struct cpu)*NCPU);
@@ -66,7 +136,7 @@ int cmain()
   mmuinit0();
   machinit();
 
-  #if defined (RPI1) || defined (RPI2)
+  #if defined (RPI1) || defined (RPI2) || defined (RPI3)
   uartinit();
   #elif defined (FVP)
   uartinit_fvp();
@@ -85,10 +155,29 @@ int cmain()
   mailboxinit();
 
   pm_size = getpmsize();
-  cprintf("ARM memory is %x\n", pm_size);
-  
+
   mmuinit1();
   gpuinit();
+
+  cprintf("ARM memory is %x\n", pm_size);
+  cprintf("Max core clock rate is %d\n", getmaxclockrate(CORE_CLOCK_ID));
+  cprintf("Min core clock rate is %d\n", getminclockrate(CORE_CLOCK_ID));
+
+  cprintf("The core clock rate is set to %d\n", setclockrate(CORE_CLOCK_ID, 250000000));
+
+  boardmodel = getboardmodel();
+  boardrevision = getboardrevision();
+
+  core_clock_freq = getclockratemeasured(CORE_CLOCK_ID);
+  cprintf("The core clock rate measured is %d\n", core_clock_freq);
+
+  cprintf("The board model is %x\n", boardmodel);
+  cprintf("The board revision is %x\n", boardrevision);
+
+  #if defined (RPI1) || defined (RPI2) || defined (RPI3)
+  uartinit(); // re-init miniUART according to the core clock frequency
+  #endif
+
   pinit();
   tvinit();
   cprintf("it is ok after tvinit\n");
