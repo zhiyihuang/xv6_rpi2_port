@@ -36,14 +36,13 @@ On an RPI2/3 installed with Raspbian, type 'make loader' to make 'kernel7.img'.
 Copy 'kernel7.img' to /boot with a different name:
 # cp kernel7.img /boot/kernel-xv6.img
 
-Comment out the old entry 'kernel=' and add a new entry
+Comment out the old entry 'kernel=' if any and add a new entry
 'kernel=kernel-xv6.img' to /boot/config.txt.
 
 Add the following into /boot/config.txt:
 
 kernel_old=1
 disable_commandline_tags=1
-enable_uart=1
 
 
 Reboot the machine.
