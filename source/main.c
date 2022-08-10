@@ -20,7 +20,7 @@ extern pde_t *kpgdir;
 extern volatile uint *mailbuffer;
 extern unsigned int pm_size;
 
-unsigned int boardmodel, boardrevision;
+unsigned int boardmodel, boardrevision, max_core_clock_freq;
 
 #if defined (RPI1) || defined (RPI2)
 unsigned int core_clock_freq = 250000000;
@@ -160,10 +160,13 @@ int cmain()
   gpuinit();
 
   cprintf("ARM memory is %x\n", pm_size);
-  cprintf("Max core clock rate is %d\n", getmaxclockrate(CORE_CLOCK_ID));
+  max_core_clock_freq = getmaxclockrate(CORE_CLOCK_ID);
+  cprintf("Max core clock rate is %d\n", max_core_clock_freq);
   cprintf("Min core clock rate is %d\n", getminclockrate(CORE_CLOCK_ID));
-  // set the core clock rate to 250MHz, but Pi 3 B+ can only be set to 400MHz
-  cprintf("The core clock rate is set to %d\n", setclockrate(CORE_CLOCK_ID, 250000000));
+  // set the core clock rate to max core clock frequency (for RPI 3 it is 400000000, and 250000000 for RPI 2)
+  // In this way the core clock frequency can be fixed and the UART baud rate, that relies on the core clock frequency, 
+  // could be correctly calculated. 
+  cprintf("The core clock rate is set to %d\n", setclockrate(CORE_CLOCK_ID, max_core_clock_freq));
 
   boardmodel = getboardmodel();
   boardrevision = getboardrevision();
